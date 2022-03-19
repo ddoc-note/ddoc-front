@@ -2,34 +2,59 @@
   <div class="form-wrapper">
     <el-form :model="form" size="large" class="form">
       <h2>用户注册</h2>
+      <p style="color: #ff8d8d">{{form.msg}}</p>
       <el-form-item>
-        <el-input v-model="form.name" type="input" placeholder="请输入用户名"/>
+        <el-input v-model="form.account" type="input" placeholder="请输入登陆账户"/>
+      </el-form-item>
+      <el-form-item>
+        <el-input v-model="form.nickName" type="input" placeholder="请输入用户名"/>
       </el-form-item>
       <el-form-item>
         <el-input v-model="form.password" type="password" placeholder="请输入密码"/>
       </el-form-item>
       <el-form-item>
-        <el-button class="register" type="primary">注册</el-button>
+        <el-button class="register" type="primary" @click="register">注册</el-button>
       </el-form-item>
     </el-form>
   </div>
 </template>
 
 <script>
-  import {reactive} from 'vue';
+  import {reactive, ref} from 'vue';
+  import axios from 'axios';
   import {useRouter} from 'vue-router';
 
   export default {
     name: 'Register',
     setup() {
+      const router = useRouter();
 
       let form = reactive({
-        name: '',
-        password: ''
+        account: '',
+        nickName: '',
+        password: '',
+        msg: '',
       });
 
+      function register() {
+        axios.post(`/api/user/${form.account}/${form.nickName}/${form.password}`).then(
+            response => {
+              if (response.data.result === 'SUCCESS') {
+                router.push('/');
+              }
+              if (response.data.result === 'FAILED') {
+                form.msg = response.data.message;
+              }
+            },
+            error => {
+              form.msg = error.message;
+            }
+        );
+      }
+
       return {
-        form
+        form,
+        register
       };
     }
   };
@@ -60,7 +85,7 @@
     box-shadow: 5px 3px 10px rgba(0, 0, 0, 0.9);
   }
 
-  .login, .register {
+  .register {
     width: 100%;
     border-radius: 4px;
   }
